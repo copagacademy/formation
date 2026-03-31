@@ -214,7 +214,7 @@
 
 <script>
   const URL_KEY = "portail_script_url_v5";
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziFV37OwlMMVTheXLA8LOne03goCpL1MZm3PRUdsAVYGN4VHGjHpJtWayNj5mgdJNfkQ/exec";
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzOEx2al8SzNCpUVuIV_Yy6uxxlCEgNR7g9ZKHWVeJDiUZI5i4FZSQ6ZglORUxXGr7lhw/exec";
   let SCRIPT_URL = localStorage.getItem(URL_KEY) || DEFAULT_SCRIPT_URL;
   let currentConfig = null;
 
