@@ -198,7 +198,7 @@
       <p class="admin-section-title">📎 Fichiers Drive</p>
       <div id="admin-fichiers"></div>
 
-      <button class="btn green" onclick="confirmSaveAdmin()" id="save-btn">💾 Enregistrer config</button>
+      <button class="btn green" onclick="saveAdmin()" id="save-btn">💾 Enregistrer config</button>
       <div class="success-msg" id="admin-success">✅ Config sauvegardée !</div>
       <div class="error-msg" id="admin-error">Erreur — réessaye.</div>
 
@@ -214,7 +214,7 @@
 
 <script>
   const URL_KEY = "portail_script_url_v5";
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVdS7iMqiy7lTCN6WBSMjESJfg-sjw2UDS-b_ofIIe18JWb41f0JrSg-VKYW0G-NbBiA/exec";
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJ4SHkuCH6lfu3UIyhmzbaUfVueZW2QhGZoqfILGj_f5sgurIXdKUi5_iO2xGvOpL9vg/exec";
   let SCRIPT_URL = localStorage.getItem(URL_KEY) || DEFAULT_SCRIPT_URL;
   let currentConfig = null;
 
@@ -446,10 +446,29 @@
     try {
       await fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ action:"saveConfig", code, sessionStart:session+":00", dureeHeures:duree, fichiers }) });
-      currentConfig={code, sessionStart:session+":00", dureeHeures:duree, fichiers};
-      document.getElementById('code-show').textContent=code;
-      errEl.style.display='none'; okEl.style.display='block';
-      setTimeout(()=>okEl.style.display='none', 4000);
+
+      btn.textContent="Vérification...";
+      await new Promise(r => setTimeout(r, 1500));
+      let saved = false;
+      try {
+        const vRes  = await fetch(SCRIPT_URL + "?action=getConfig&t=" + Date.now());
+        const vData = await vRes.json();
+        if (vData.success && vData.config.code.toString().toUpperCase() === code) {
+          currentConfig = vData.config;
+          saved = true;
+        }
+      } catch(ve) {}
+
+      if (saved) {
+        document.getElementById('code-show').textContent = code;
+        errEl.style.display='none';
+        okEl.textContent = "✅ Sauvegardé ! Code actif : " + code;
+        okEl.style.display='block';
+        setTimeout(()=>okEl.style.display='none', 5000);
+      } else {
+        errEl.textContent = "❌ Erreur — le code n\'a pas été sauvegardé. Réessaye.";
+        errEl.style.display='block';
+      }
     } catch(e) { errEl.textContent="Erreur réseau."; errEl.style.display='block'; }
     btn.disabled=false; btn.textContent="💾 Enregistrer config";
   }
