@@ -214,7 +214,7 @@
 
 <script>
   const URL_KEY = "portail_script_url_v5";
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM3sl3-gFEg5RYyqjnFsWnIEYwlX5t2IdTa8F8G-1E4HM_ClO5JT-VKhOn9U8nyCGKgg/exec";
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVdS7iMqiy7lTCN6WBSMjESJfg-sjw2UDS-b_ofIIe18JWb41f0JrSg-VKYW0G-NbBiA/exec";
   let SCRIPT_URL = localStorage.getItem(URL_KEY) || DEFAULT_SCRIPT_URL;
   let currentConfig = null;
 
@@ -398,7 +398,7 @@
   /* ===== ADMIN ===== */
   function loadAdminForm() {
     document.getElementById('admin-url').value = SCRIPT_URL || '';
-    const cfg = currentConfig || { code:'', sessionStart:'', dureeHeures:8, fichiers:[{name:'Support de formation (PDF)',sous_titre:'Cliquez pour télécharger',url:''},{name:'Photo de groupe',sous_titre:'Cliquez pour télécharger',url:''}] };
+    const cfg = currentConfig || { code:'', sessionStart:'', dureeHeures:8, fichiers:[{name:'Support de formation',sous_titre:'Cliquez pour télécharger',url:''},{name:'Photo de groupe',sous_titre:'Cliquez pour télécharger',url:''}] };
     document.getElementById('admin-code').value    = cfg.code || '';
     document.getElementById('admin-duree').value   = cfg.dureeHeures || 8;
     document.getElementById('admin-session').value = (cfg.sessionStart||'').slice(0,16);
