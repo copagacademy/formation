@@ -236,7 +236,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNd_1vR88qFWmfmVsKcBhRqOFWkyf64XShjeAgnRFWTY8lfJawMkx4B1eYHF6qTrOUaQ/exec"; // ← Changer ici si nouveau déploiement
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxii10w6zLICU2H2A879R8ktlEm8jJWXIYTjcs7xM2euO2MOD2F41NQU5KBhd3v6X_Klw/exec"; // ← Changer ici si nouveau déploiement
   let currentConfig = null;
 
   async function init() {
@@ -354,12 +354,24 @@
   });
 
   /* ===== FIX 3 — Files avec vérification lien ===== */
+  function convertDriveUrl(url) {
+    if (!url) return url;
+    // Format: /file/d/FILE_ID/view → uc?export=download&id=FILE_ID
+    let m = url.match(/\/file\/d\/([^\/]+)/);
+    if (m) return 'https://drive.google.com/uc?export=download&id=' + m[1];
+    // Format: open?id=FILE_ID
+    m = url.match(/[?&]id=([^&]+)/);
+    if (m) return 'https://drive.google.com/uc?export=download&id=' + m[1];
+    return url;
+  }
+
   function renderFiles() {
     const fichiers = currentConfig?.fichiers || [];
     const c = document.getElementById('files-list'); c.innerHTML = '';
     fichiers.forEach(f => {
       const a = document.createElement('a');
-      a.href = f.url; a.target='_blank'; a.rel='noopener noreferrer'; a.className='file-card checking';
+      const dlUrl = convertDriveUrl(f.url);
+      a.href = dlUrl; a.target='_blank'; a.rel='noopener noreferrer'; a.className='file-card checking'; a.download='';
       a.innerHTML = `
         <div class="file-icon" id="icon-${encodeURIComponent(f.name)}">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -374,7 +386,7 @@
       c.appendChild(a);
 
       // FIX 3 — Vérification lien Drive
-      checkDriveLink(f.url).then(ok => {
+      checkDriveLink(dlUrl).then(ok => {
         a.classList.remove('checking');
         const icon = document.getElementById('icon-' + encodeURIComponent(f.name));
         const sub  = document.getElementById('sub-'  + encodeURIComponent(f.name));
@@ -417,7 +429,7 @@
   }
 
   /* ===== ADMIN ===== */
-  function loadAdminForm() {
+  async function loadAdminForm() {
     document.getElementById('admin-url').value = SCRIPT_URL || '';
     const cfg = currentConfig || { code:'', sessionStart:'', dureeHeures:8, fichiers:[{name:'Support de formation',sous_titre:'Cliquez pour télécharger',url:''},{name:'Photo de groupe',sous_titre:'Cliquez pour télécharger',url:''}] };
     document.getElementById('admin-code').value    = cfg.code || '';
@@ -428,6 +440,17 @@
     (cfg.fichiers||[]).forEach((f,i) => {
       c.innerHTML += `<div class="fichier-block"><div class="admin-field"><label>Nom ${i+1}</label><input type="text" id="fname-${i}" value="${f.name||''}"/></div><div class="admin-field"><label>Lien Drive</label><input type="text" id="furl-${i}" value="${f.url||''}"/></div></div>`;
     });
+    // Charger la liste des matricules depuis Apps Script
+    try {
+      const res  = await fetch(SCRIPT_URL + "?action=getListe&t=" + Date.now());
+      const data = await res.json();
+      if (data.success && data.matricules && data.matricules.length > 0) {
+        document.getElementById('admin-liste').value = data.matricules.join('\n');
+        const badge = document.getElementById('liste-count');
+        badge.textContent = data.matricules.length + ' nass';
+        badge.style.display = 'inline-block';
+      }
+    } catch(e) {}
   }
 
   /* FIX — Confirmation avant changement de code */
@@ -475,15 +498,24 @@
     const btn=document.getElementById('save-btn');
     if (!code||!session||!duree) { errEl.style.display='block'; okEl.style.display='none'; return; }
     const fichiers=(cfg.fichiers||[]).map((f,i)=>({ name:document.getElementById(`fname-${i}`)?.value.trim()||f.name, sous_titre:f.sous_titre||'Cliquez pour télécharger', url:document.getElementById(`furl-${i}`)?.value.trim()||f.url }));
-    btn.disabled=true; btn.textContent="Enregistrement...";
+    btn.disabled=true; btn.textContent="⏳ Envoi en cours...";
+    errEl.style.display='none'; okEl.style.display='none';
     try {
-      await fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ action:"saveConfig", code, sessionStart:session+":00", dureeHeures:duree, fichiers }) });
-      currentConfig={code, sessionStart:session+":00", dureeHeures:duree, fichiers};
-      document.getElementById('code-show').textContent=code;
-      errEl.style.display='none'; okEl.style.display='block';
-      setTimeout(()=>okEl.style.display='none', 4000);
-    } catch(e) { errEl.textContent="Erreur réseau."; errEl.style.display='block'; }
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action:"saveConfig", code, sessionStart:session+":00", dureeHeures:duree, fichiers })
+      });
+      currentConfig = { code, sessionStart:session+":00", dureeHeures:duree, fichiers };
+      document.getElementById('code-show').textContent = code;
+      okEl.textContent = "✅ Config sauvegardée ! Code actif : " + code;
+      okEl.style.display = 'block';
+      setTimeout(() => okEl.style.display='none', 5000);
+    } catch(e) {
+      errEl.textContent = "❌ Erreur : " + e.message;
+      errEl.style.display = 'block';
+    }
     btn.disabled=false; btn.textContent="💾 Enregistrer config";
   }
 
