@@ -213,9 +213,7 @@
 </div>
 
 <script>
-  const URL_KEY = "portail_script_url_v5";
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJ4SHkuCH6lfu3UIyhmzbaUfVueZW2QhGZoqfILGj_f5sgurIXdKUi5_iO2xGvOpL9vg/exec";
-  let SCRIPT_URL = localStorage.getItem(URL_KEY) || DEFAULT_SCRIPT_URL;
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJ4SHkuCH6lfu3UIyhmzbaUfVueZW2QhGZoqfILGj_f5sgurIXdKUi5_iO2xGvOpL9vg/exec"; // ← غيّر هنا إلا بدّلت déploiement
   let currentConfig = null;
 
   async function init() {
@@ -250,7 +248,7 @@
     const url = document.getElementById('admin-url').value.trim();
     const ok = document.getElementById('url-success'), err = document.getElementById('url-error');
     if (!url.includes('script.google.com')) { err.style.display='block'; ok.style.display='none'; return; }
-    localStorage.setItem(URL_KEY, url); SCRIPT_URL = url;
+    SCRIPT_URL = url;
     err.style.display='none'; ok.style.display='block';
     setTimeout(()=>ok.style.display='none', 3000);
   }
@@ -446,19 +444,16 @@
     try {
       await fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ action:"saveConfig", code, sessionStart:session+":00", dureeHeures:duree, fichiers }) });
-
       btn.textContent="Vérification...";
       await new Promise(r => setTimeout(r, 1500));
       let saved = false;
       try {
-        const vRes  = await fetch(SCRIPT_URL + "?action=getConfig&t=" + Date.now());
+        const vRes = await fetch(SCRIPT_URL + "?action=getConfig&t=" + Date.now());
         const vData = await vRes.json();
         if (vData.success && vData.config.code.toString().toUpperCase() === code) {
-          currentConfig = vData.config;
-          saved = true;
+          currentConfig = vData.config; saved = true;
         }
       } catch(ve) {}
-
       if (saved) {
         document.getElementById('code-show').textContent = code;
         errEl.style.display='none';
@@ -466,7 +461,7 @@
         okEl.style.display='block';
         setTimeout(()=>okEl.style.display='none', 5000);
       } else {
-        errEl.textContent = "❌ Erreur — le code n\'a pas été sauvegardé. Réessaye.";
+        errEl.textContent = "❌ Erreur — le code n'a pas été sauvegardé. Réessaye.";
         errEl.style.display='block';
       }
     } catch(e) { errEl.textContent="Erreur réseau."; errEl.style.display='block'; }
