@@ -78,17 +78,6 @@
   .code-display p { font-size: 12px; color: #6b7280; margin-top: 4px; }
   .hint { font-size: 12px; color: #94a3b8; margin-top: 6px; line-height: 1.6; }
   .count-badge { display: inline-block; background: rgba(34,197,94,0.15); color: #4ade80; font-size: 12px; padding: 3px 10px; border-radius: 6px; margin-left: 8px; font-family: 'DM Mono', monospace; }
-
-  .modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
-  .modal-overlay.active { display:flex; }
-  .modal-box { background:#fff; border-radius:16px; padding:2rem; max-width:380px; width:90%; }
-  .modal-box h3 { font-size:16px; font-weight:600; color:#1e293b; margin-bottom:0.75rem; }
-  .modal-box p { font-size:14px; color:#64748b; margin-bottom:1.5rem; line-height:1.6; }
-  .modal-code { font-family:'DM Mono',monospace; font-size:17px; font-weight:600; color:#1e40af; }
-  .modal-buttons { display:flex; gap:10px; }
-  .modal-buttons button { flex:1; padding:11px; border:none; border-radius:10px; font-size:14px; font-weight:500; cursor:pointer; }
-  .btn-cancel { background:#f1f5f9; color:#64748b; }
-  .btn-confirm { background:#1e40af; color:#fff; }
 </style>
 </head>
 <body>
@@ -223,35 +212,8 @@
 
 </div>
 
-  <!-- CONFIRMATION MODAL -->
-  <div class="modal-overlay" id="confirm-modal">
-    <div class="modal-box">
-      <h3>⚠️ Confirmer le changement</h3>
-      <p>Tu vas changer le code de <span class="modal-code" id="modal-old-code"></span> vers <span class="modal-code" id="modal-new-code"></span>.<br><br>Les stagiaires devront utiliser le nouveau code.</p>
-      <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-        <button class="btn-confirm" onclick="confirmAndSave()">Confirmer</button>
-      </div>
-    </div>
-  
-  <!-- CONFIRMATION MODAL -->
-  <div class="modal-overlay" id="confirm-modal">
-    <div class="modal-box">
-      <h3>⚠️ Confirmer le changement</h3>
-      <p>Tu vas changer le code de <span class="modal-code" id="modal-old-code"></span> vers <span class="modal-code" id="modal-new-code"></span>.<br><br>Les stagiaires devront utiliser le nouveau code.</p>
-      <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-        <button class="btn-confirm" onclick="confirmAndSave()">Confirmer ✅</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
 <script>
-  const URL_KEY = "portail_script_url_v5";
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJ4SHkuCH6lfu3UIyhmzbaUfVueZW2QhGZoqfILGj_f5sgurIXdKUi5_iO2xGvOpL9vg/exec";
-  let SCRIPT_URL = localStorage.getItem(URL_KEY) || DEFAULT_SCRIPT_URL;
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJ4SHkuCH6lfu3UIyhmzbaUfVueZW2QhGZoqfILGj_f5sgurIXdKUi5_iO2xGvOpL9vg/exec"; // ← Changer ici si nouveau déploiement Apps Script
   let currentConfig = null;
 
   async function init() {
@@ -278,7 +240,7 @@
   function saveSetupUrl() {
     const url = document.getElementById('setup-url').value.trim();
     if (!url.includes('script.google.com')) { document.getElementById('setup-error').style.display='block'; return; }
-    localStorage.setItem(URL_KEY, url); SCRIPT_URL = url;
+    SCRIPT_URL = url; // Mis à jour en mémoire uniquement
     hide("setup-page"); show("loading-page"); init();
   }
 
@@ -286,7 +248,7 @@
     const url = document.getElementById('admin-url').value.trim();
     const ok = document.getElementById('url-success'), err = document.getElementById('url-error');
     if (!url.includes('script.google.com')) { err.style.display='block'; ok.style.display='none'; return; }
-    localStorage.setItem(URL_KEY, url); SCRIPT_URL = url;
+    SCRIPT_URL = url; // Mis à jour en mémoire uniquement
     err.style.display='none'; ok.style.display='block';
     setTimeout(()=>ok.style.display='none', 3000);
   }
@@ -434,7 +396,7 @@
   /* ===== ADMIN ===== */
   function loadAdminForm() {
     document.getElementById('admin-url').value = SCRIPT_URL || '';
-    const cfg = currentConfig || { code:'', sessionStart:'', dureeHeures:8, fichiers:[{name:'Support de formation (PDF)',sous_titre:'Cliquez pour télécharger',url:''},{name:'Photo de groupe',sous_titre:'Cliquez pour télécharger',url:''}] };
+    const cfg = currentConfig || { code:'', sessionStart:'', dureeHeures:8, fichiers:[{name:'Support de formation',sous_titre:'Cliquez pour télécharger',url:''},{name:'Photo de groupe',sous_titre:'Cliquez pour télécharger',url:''}] };
     document.getElementById('admin-code').value    = cfg.code || '';
     document.getElementById('admin-duree').value   = cfg.dureeHeures || 8;
     document.getElementById('admin-session').value = (cfg.sessionStart||'').slice(0,16);
@@ -447,23 +409,11 @@
 
   /* FIX — Confirmation avant changement de code */
   function confirmSaveAdmin() {
-    const newCode     = document.getElementById('admin-code').value.trim().toUpperCase();
+    const newCode    = document.getElementById('admin-code').value.trim().toUpperCase();
     const currentCode = (currentConfig?.code || '').toUpperCase();
     if (newCode !== currentCode && currentCode !== '') {
-      document.getElementById('modal-old-code').textContent = currentCode;
-      document.getElementById('modal-new-code').textContent = newCode;
-      document.getElementById('confirm-modal').classList.add('active');
-    } else {
-      saveAdmin();
+      if (!confirm(`⚠️ Tu vas changer le code de "${currentCode}" vers "${newCode}".\n\nLes stagiaires devront utiliser le nouveau code.\n\nConfirmes-tu ?`)) return;
     }
-  }
-
-  function closeModal() {
-    document.getElementById('confirm-modal').classList.remove('active');
-  }
-
-  function confirmAndSave() {
-    closeModal();
     saveAdmin();
   }
 
