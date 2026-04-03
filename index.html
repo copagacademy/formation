@@ -476,4 +476,19 @@
   init();
 </script>
 </body>
+<script>
+const API_URL = localStorage.getItem("appScriptUrl");
+
+// fonction API
+async function api(action, data = {}) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action, ...data })
+  });
+  return await res.json();
+}
+
+console.log(API_URL);
+</script>
 </html>
+
