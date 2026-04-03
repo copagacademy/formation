@@ -123,7 +123,7 @@
       <div class="input-wrap"><input type="text" id="matricule-input" placeholder="Ex: 500701"/></div>
       <label>Numéro de téléphone</label>
       <div class="input-wrap"><input type="tel" id="tel-input" placeholder="Ex: 0612345678"/></div>
-      <button class="btn" id="login-btn" onclick="checkCode()">Accéder aux supports</button>
+      <button class="btn" id="login-btn" onclick="submitForm()">Accéder aux supports</button>
       <div class="error-msg" id="error-msg"></div>
     </div>
   </div>
@@ -474,6 +474,37 @@
   }
 
   init();
+</script>
+  <script>
+async function submitForm() {
+  const code = document.getElementById("code-input").value.trim();
+  const matricule = document.getElementById("matricule-input").value.trim();
+  const telephone = document.getElementById("tel-input").value.trim();
+
+  if (!code || !matricule) {
+    alert("Remplis les champs");
+    return;
+  }
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "saveEntry",
+      code,
+      matricule,
+      telephone
+    })
+  });
+
+  const data = await res.json();
+  console.log(data);
+
+  if (data.success) {
+    alert("Enregistré ✅");
+  } else {
+    alert("Erreur ❌");
+  }
+}
 </script>
 </body>
   <script>
