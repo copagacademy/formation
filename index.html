@@ -209,7 +209,7 @@
       <p class="admin-section-title">📎 Fichiers Drive</p>
       <div id="admin-fichiers"></div>
 
-      <button class="btn green" onclick="confirmSaveAdmin()" id="save-btn">💾 Enregistrer config</button>
+      <button class="btn green" onclick="saveAdmin()" id="save-btn">💾 Enregistrer config</button>
       <div class="success-msg" id="admin-success">✅ Config sauvegardée !</div>
       <div class="error-msg" id="admin-error">Erreur — réessaye.</div>
 
@@ -433,7 +433,7 @@
   /* FIX — Confirmation avant changement de code */
   function confirmSaveAdmin() {
     const newCode     = document.getElementById('admin-code').value.trim().toUpperCase();
-    const currentCode = (currentConfig?.code || '').toUpperCase();
+    const currentCode = (currentConfig?.code?.toString() || '').toUpperCase();
     if (newCode !== currentCode && currentCode !== '') {
       document.getElementById('modal-old-code').textContent = currentCode;
       document.getElementById('modal-new-code').textContent = newCode;
