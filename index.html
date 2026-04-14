@@ -2,7 +2,598 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="vie<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portail Formation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: #f0f4f8; color: #1e293b; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .container { width: 100%; max-width: 480px; padding: 2rem 1.5rem; }
+  .logo { text-align: center; margin-bottom: 2.5rem; }
+  .logo-icon { width: 56px; height: 56px; background: #1e40af; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+  .logo-icon svg { width: 28px; height: 28px; }
+  .logo h1 { font-size: 22px; font-weight: 600; color: #1e293b; letter-spacing: -0.3px; }
+  .logo p { font-size: 14px; color: #94a3b8; margin-top: 4px; }
+  .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 2rem; }
+  .card label { display: block; font-size: 13px; font-weight: 500; color: #64748b; margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .input-wrap { margin-bottom: 1.1rem; }
+  .input-wrap input, .input-wrap textarea { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; font-size: 15px; font-family: 'DM Sans', sans-serif; color: #1e293b; outline: none; transition: border-color 0.2s; }
+  .input-wrap textarea { resize: vertical; min-height: 120px; font-size: 13px; font-family: 'DM Mono', monospace; line-height: 1.8; }
+  .input-wrap input.code-style { font-family: 'DM Mono', monospace; font-size: 18px; text-align: center; letter-spacing: 4px; text-transform: uppercase; }
+  .input-wrap input:focus, .input-wrap textarea:focus { border-color: #3b82f6; }
+  .input-wrap input.error { border-color: #ef4444; }
+  .divider { height: 1px; background: #e2e8f0; margin: 1.25rem 0; }
+  .btn { width: 100%; padding: 13px; background: #1e40af; color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+  .btn:hover { background: #1d4ed8; }
+  .btn.green { background: #16a34a; }
+  .btn.green:hover { background: #15803d; }
+  .btn:disabled { background: #374151; cursor: not-allowed; }
+  .error-msg { display: none; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-top: 12px; text-align: center; }
+  .success-msg { display: none; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #16a34a; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-top: 12px; text-align: center; }
+  .info-msg { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #2563eb; border-radius: 8px; padding: 10px 14px; font-size: 12px; margin-bottom: 12px; line-height: 1.6; }
+  .loading-screen { text-align: center; padding: 3rem 1rem; color: #64748b; }
+  .loading-screen p { font-size: 14px; margin-top: 1rem; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #access-page, #admin-page, #login-page, #setup-page, #admin-pw-page { display: none; }
+  .timer-bar { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+  .timer-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+  .timer-label { font-size: 13px; color: #64748b; }
+  .timer-value { font-family: 'DM Mono', monospace; font-size: 14px; color: #22c55e; font-weight: 500; margin-left: auto; }
+  .timer-dot.expired { background: #ef4444; animation: none; }
+  .timer-value.expired { color: #ef4444; }
+  .files-title { font-size: 13px; font-weight: 500; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .file-card { display: flex; align-items: center; gap: 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; text-decoration: none; transition: border-color 0.2s; }
+  .file-card:hover { border-color: #3b82f6; background: #eff6ff; }
+  .file-card.checking { opacity: 0.6; pointer-events: none; }
+  .file-card.ok { border-color: rgba(34,197,94,0.4); }
+  .file-card.broken { border-color: rgba(239,68,68,0.4); opacity: 0.5; pointer-events: none; }
+  .file-icon { width: 40px; height: 40px; background: rgba(59,130,246,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .file-icon svg { width: 20px; height: 20px; color: #60a5fa; }
+  .file-icon.ok-icon { background: rgba(34,197,94,0.15); }
+  .file-icon.ok-icon svg { color: #16a34a; }
+  .file-icon.broken-icon { background: rgba(239,68,68,0.15); }
+  .file-icon.broken-icon svg { color: #ef4444; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 14px; font-weight: 500; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  .file-arrow { color: #cbd5e1; font-size: 18px; }
+  .expired-banner { display: none; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 1.25rem; text-align: center; margin-bottom: 1rem; }
+  .expired-banner p { color: #ef4444; font-size: 14px; }
+  .expired-banner strong { display: block; font-size: 16px; margin-bottom: 4px; color: #ef4444; }
+  .welcome-badge { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px; padding: 10px 14px; margin-bottom: 1.25rem; font-size: 13px; color: #16a34a; text-align: center; }
+  .admin-field { margin-bottom: 1.1rem; }
+  .admin-field label { display: block; font-size: 13px; font-weight: 500; color: #64748b; margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .admin-field input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 11px 14px; font-size: 14px; font-family: 'DM Mono', monospace; color: #1e293b; outline: none; transition: border-color 0.2s; }
+  .admin-field input:focus { border-color: #3b82f6; }
+  .admin-section-title { font-size: 11px; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 1rem; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+  .admin-badge { display: inline-block; background: rgba(239,68,68,0.15); color: #ef4444; font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-left: 8px; }
+  .fichier-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem; margin-bottom: 10px; }
+  .fichier-block .admin-field { margin-bottom: 10px; }
+  .fichier-block .admin-field:last-child { margin-bottom: 0; }
+  .code-display { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 12px; text-align: center; margin-top: 1rem; }
+  .code-display span { font-family: 'DM Mono', monospace; font-size: 24px; color: #1e40af; font-weight: 500; letter-spacing: 4px; }
+  .code-display p { font-size: 12px; color: #6b7280; margin-top: 4px; }
+  .hint { font-size: 12px; color: #94a3b8; margin-top: 6px; line-height: 1.6; }
+  .count-badge { display: inline-block; background: rgba(34,197,94,0.15); color: #16a34a; font-size: 12px; padding: 3px 10px; border-radius: 6px; margin-left: 8px; font-family: 'DM Mono', monospace; }
+  .fichier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .fichier-header span { font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+  .btn-supprimer { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 4px 12px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-supprimer:hover { background: rgba(239,68,68,0.2); }
+  .btn-ajouter { width: 100%; padding: 11px; background: rgba(59,130,246,0.08); color: #2563eb; border: 1px dashed #3b82f6; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 10px; }
+  .btn-ajouter:hover { background: rgba(59,130,246,0.15); }
+  .modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center; }
+  .modal-overlay.active { display:flex; }
+  .modal-box { background:#fff; border-radius:16px; padding:2rem; max-width:380px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+  .modal-box h3 { font-size:16px; font-weight:600; color:#1e293b; margin-bottom:0.75rem; }
+  .modal-box p { font-size:14px; color:#64748b; margin-bottom:1.5rem; line-height:1.6; }
+  .modal-code { font-family:'DM Mono',monospace; font-size:17px; font-weight:600; color:#1e40af; }
+  .modal-buttons { display:flex; gap:10px; }
+  .modal-buttons button { flex:1; padding:11px; border:none; border-radius:10px; font-size:14px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; }
+  .btn-cancel { background:#f1f5f9; color:#64748b; }
+  .btn-confirm { background:#1e40af; color:#fff; }
+  .pw-recovery { margin-top:1.5rem; padding:12px; background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:10px; font-size:12px; color:#64748b; line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- LOADING -->
+  <div id="loading-page">
+    <div class="loading-screen"><div class="spinner"></div><p>Chargement...</p></div>
+  </div>
+
+  <!-- ADMIN PASSWORD -->
+  <div id="admin-pw-page">
+    <div class="logo">
+      <div class="logo-icon" style="background:#7c3aed;">
+        <svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <h1>Accès Admin</h1>
+      <p>Entrez le mot de passe pour continuer</p>
+    </div>
+    <div class="card">
+      <label>Mot de passe</label>
+      <div class="input-wrap">
+        <input type="password" id="admin-pw-input" class="code-style" placeholder="••••••••" autocomplete="off"/>
+      </div>
+      <button class="btn" onclick="checkAdminPassword()">🔓 Accéder au panel admin</button>
+      <div class="error-msg" id="admin-pw-error">❌ Mot de passe incorrect.</div>
+      <div class="pw-recovery">
+        🔑 <strong>Mot de passe oublié ?</strong><br>
+        Google Sheet → onglet <strong>Config</strong> → ligne 2 → colonne <strong>E</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div id="setup-page">
+    <div class="logo">
+      <div class="logo-icon" style="background:#7c3aed;">
+        <svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      </div>
+      <h1>Configuration</h1>
+      <p>Première configuration du portail</p>
+    </div>
+    <div class="card">
+      <div class="info-msg">ℹ️ Apps Script → Déployer → Copie l'URL et colle-la ici.</div>
+      <label>URL Apps Script</label>
+      <div class="input-wrap"><input type="text" id="setup-url" placeholder="https://script.google.com/macros/s/.../exec"/></div>
+      <button class="btn" onclick="saveSetupUrl()">Enregistrer et continuer</button>
+      <div class="error-msg" id="setup-error">URL invalide</div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="login-page">
+    <div class="logo">
+      <div class="logo-icon" style="background:#1e40af;">
+        <svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      </div>
+      <h1>Portail Formation</h1>
+      <p>Entrez vos informations pour accéder</p>
+    </div>
+    <div class="card">
+      <label>Code de session</label>
+      <div class="input-wrap"><input type="text" id="code-input" class="code-style" placeholder="XXXX" maxlength="10" autocomplete="off" spellcheck="false"/></div>
+      <div class="divider"></div>
+      <label>Matricule</label>
+      <div class="input-wrap"><input type="text" id="matricule-input" placeholder="Ex: 500701"/></div>
+      <label>Numéro de téléphone</label>
+      <div class="input-wrap"><input type="tel" id="tel-input" placeholder="Ex: 0612345678"/></div>
+      <button class="btn" id="login-btn" onclick="checkCode()">Accéder aux supports</button>
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- ACCESS -->
+  <div id="access-page">
+    <div class="logo">
+      <div class="logo-icon" style="background:#1e40af;">
+        <svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <h1>Supports de Formation</h1>
+      <p>Accès accordé — bonne formation !</p>
+    </div>
+    <div class="welcome-badge" id="welcome-badge">👋 Bienvenue !</div>
+    <div class="timer-bar">
+      <div class="timer-dot" id="timer-dot"></div>
+      <span class="timer-label">Accès valide encore</span>
+      <span class="timer-value" id="timer-display">--:--:--</span>
+    </div>
+    <div class="expired-banner" id="expired-banner">
+      <strong>Accès expiré</strong><p>La session est terminée.</p>
+    </div>
+    <p class="files-title">Fichiers disponibles</p>
+    <div id="files-list"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin-page">
+    <div class="logo">
+      <div class="logo-icon" style="background:#7c3aed;">
+        <svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <h1>Admin <span class="admin-badge">Privé</span></h1>
+      <p>Configuration de la session</p>
+    </div>
+    <div class="card">
+      <p class="admin-section-title">🔗 URL Apps Script</p>
+      <div class="admin-field">
+        <label>URL de déploiement</label>
+        <input type="text" id="admin-url" placeholder="https://script.google.com/macros/s/.../exec"/>
+        <p class="hint">Change si tu as fait un nouveau déploiement.</p>
+      </div>
+      <button class="btn" onclick="saveUrl()" style="margin-bottom:0.5rem;">🔗 Mettre à jour l'URL</button>
+      <div class="success-msg" id="url-success">✅ URL mise à jour !</div>
+      <div class="error-msg" id="url-error">URL invalide.</div>
+
+      <p class="admin-section-title">🔑 Code stagiaires</p>
+      <div class="admin-field">
+        <label>Code</label>
+        <input type="text" id="admin-code"/>
+      </div>
+
+      <p class="admin-section-title">⏰ Session</p>
+      <div class="admin-field">
+        <label>Date et heure de début</label>
+        <input type="datetime-local" id="admin-session"/>
+      </div>
+      <div class="admin-field">
+        <label>Durée (heures)</label>
+        <input type="number" id="admin-duree" min="1" max="24" value="8"/>
+      </div>
+
+      <p class="admin-section-title">👥 Matricules autorisés <span id="liste-count" class="count-badge" style="display:none;"></span></p>
+      <div class="input-wrap">
+        <textarea id="admin-liste" placeholder="500701&#10;500702&#10;500703&#10;..."></textarea>
+      </div>
+      <p class="hint">⚠️ Khlitiha khawya → koul wahd idkhol.</p>
+      <button class="btn green" onclick="saveListe()" id="save-liste-btn" style="margin-bottom:0.75rem;">👥 Enregistrer la liste</button>
+      <div class="success-msg" id="liste-success"></div>
+      <div class="error-msg" id="liste-error">Erreur — réessaye.</div>
+
+      <p class="admin-section-title">📎 Fichiers Drive</p>
+      <div id="admin-fichiers"></div>
+
+      <p class="admin-section-title">🔒 Mot de passe admin</p>
+      <div class="admin-field">
+        <label>Mot de passe</label>
+        <input type="text" id="admin-pw-change" placeholder="Ex: ADMIN2026"/>
+        <p class="hint">Visible dans Google Sheet colonne E si oublié.</p>
+      </div>
+
+      <button class="btn green" onclick="confirmSaveAdmin()" id="save-btn">💾 Enregistrer config</button>
+      <div class="success-msg" id="admin-success"></div>
+      <div class="error-msg" id="admin-error">Erreur — réessaye.</div>
+
+      <p class="admin-section-title">📋 Code actuel</p>
+      <div class="code-display">
+        <span id="code-show">—</span>
+        <p>Ce code fonctionne sur tous les appareils</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box">
+      <h3>⚠️ Confirmer le changement</h3>
+      <p>Tu vas changer le code de <span class="modal-code" id="modal-old-code"></span> vers <span class="modal-code" id="modal-new-code"></span>.<br><br>Les stagiaires devront utiliser le nouveau code.</p>
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        <button class="btn-confirm" onclick="confirmAndSave()">Confirmer ✅</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVcKKXrb_C_D_HCeI2McIDEtC8unZG2Lc8NeDgFSAWk93pBKaKLU9ySqtEHKyAHFrTcQ/exec";
+  let currentConfig = null;
+
+  async function init() {
+    const isAdmin = window.location.hash === "#admin";
+    if (!SCRIPT_URL) { hide("loading-page"); show("setup-page"); return; }
+    try {
+      const res = await fetch(SCRIPT_URL + "?action=getConfig&t=" + Date.now());
+      const data = await res.json();
+      if (data.success) currentConfig = data.config;
+    } catch(e) {}
+    hide("loading-page");
+    if (isAdmin) { show("admin-pw-page"); }
+    else { show("login-page"); clearFields(); }
+  }
+
+  function show(id) { document.getElementById(id).style.display = 'block'; }
+  function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+  function clearFields() {
+    ['code-input','matricule-input','tel-input'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.value='';
+    });
+    const err = document.getElementById('error-msg'); if(err) err.style.display='none';
+    const btn = document.getElementById('login-btn');
+    if(btn) { btn.disabled=false; btn.textContent="Accéder aux supports"; }
+  }
+
+  function checkAdminPassword() {
+    const input = document.getElementById('admin-pw-input').value.trim();
+    const err   = document.getElementById('admin-pw-error');
+    const expected = (currentConfig?.adminPassword || "ADMIN2026").toUpperCase();
+    if (input.toUpperCase() === expected) {
+      hide("admin-pw-page");
+      show("admin-page");
+      loadAdminForm();
+    } else {
+      err.style.display = 'block';
+      document.getElementById('admin-pw-input').classList.add('error');
+      setTimeout(() => {
+        err.style.display = 'none';
+        document.getElementById('admin-pw-input').classList.remove('error');
+      }, 2000);
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    const pwPage = document.getElementById('admin-pw-page');
+    const lp = document.getElementById('login-page');
+    if (e.key === 'Enter' && pwPage && pwPage.style.display !== 'none') checkAdminPassword();
+    if (e.key === 'Enter' && lp && lp.style.display !== 'none') checkCode();
+  });
+
+  function saveSetupUrl() {
+    const url = document.getElementById('setup-url').value.trim();
+    if (!url.includes('script.google.com')) { document.getElementById('setup-error').style.display='block'; return; }
+    SCRIPT_URL = url;
+    hide("setup-page"); show("loading-page"); init();
+  }
+
+  function saveUrl() {
+    const url = document.getElementById('admin-url').value.trim();
+    const ok = document.getElementById('url-success'), err = document.getElementById('url-error');
+    if (!url.includes('script.google.com')) { err.style.display='block'; ok.style.display='none'; return; }
+    SCRIPT_URL = url;
+    err.style.display='none'; ok.style.display='block';
+    setTimeout(()=>ok.style.display='none', 3000);
+  }
+
+  async function checkCode() {
+    const code      = document.getElementById('code-input').value.trim().toUpperCase();
+    const matricule = document.getElementById('matricule-input').value.trim();
+    const tel       = document.getElementById('tel-input').value.trim();
+    const err       = document.getElementById('error-msg');
+    const btn       = document.getElementById('login-btn');
+    if (!code || !matricule || !tel) {
+      err.textContent = "Remplis tous les champs."; err.style.display='block'; return;
+    }
+    const telDigits = tel.replace(/\s/g, '');
+    if (!/^\d{10}$/.test(telDigits)) {
+      document.getElementById('tel-input').classList.add('error');
+      err.textContent = "⚠️ Numéro invalide — exactement 10 chiffres requis."; err.style.display='block';
+      setTimeout(()=>document.getElementById('tel-input').classList.remove('error'), 2000); return;
+    }
+    err.style.display='none'; btn.disabled=true; btn.textContent="Vérification...";
+    try {
+      const res = await fetch(SCRIPT_URL + "?action=getConfig&t=" + Date.now());
+      const data = await res.json();
+      if (data.success) currentConfig = data.config;
+    } catch(e) {}
+    const cfg = currentConfig;
+    if (!cfg) {
+      btn.disabled=false; btn.textContent="Accéder aux supports";
+      err.textContent="Erreur connexion — actualise la page."; err.style.display='block'; return;
+    }
+    if (code !== String(cfg.code).toUpperCase()) {
+      document.getElementById('code-input').classList.add('error');
+      err.textContent="Code incorrect."; err.style.display='block';
+      btn.disabled=false; btn.textContent="Accéder aux supports";
+      setTimeout(()=>document.getElementById('code-input').classList.remove('error'), 1500); return;
+    }
+    btn.textContent="Vérification matricule...";
+    let matriculeAllowed = false;
+    try {
+      const res = await fetch(SCRIPT_URL + "?action=checkMatricule&matricule=" + encodeURIComponent(matricule) + "&t=" + Date.now());
+      const data = await res.json();
+      matriculeAllowed = (data.success && data.allowed === true);
+    } catch(e) {
+      btn.disabled=false; btn.textContent="Accéder aux supports";
+      err.textContent="❌ Erreur connexion — réessaye."; err.style.display='block'; return;
+    }
+    if (!matriculeAllowed) {
+      btn.disabled=false; btn.textContent="Accéder aux supports";
+      err.textContent="❌ Matricule non autorisé. Contacte ton formateur."; err.style.display='block'; return;
+    }
+    btn.textContent="Chargement...";
+    try {
+      await fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ action:"saveEntry", matricule, telephone:telDigits, code }) });
+    } catch(e) {}
+    hide("login-page"); show("access-page");
+    document.getElementById('welcome-badge').textContent = `👋 Bienvenue — ${matricule}`;
+    renderFiles(); startTimer();
+  }
+
+  function convertDriveUrl(url) {
+    if (!url) return url;
+    let m = url.match(/\/file\/d\/([^\/]+)/);
+    if (m) return 'https://drive.google.com/uc?export=download&id=' + m[1];
+    m = url.match(/[?&]id=([^&]+)/);
+    if (m) return 'https://drive.google.com/uc?export=download&id=' + m[1];
+    return url;
+  }
+
+  function renderFiles() {
+    const fichiers = currentConfig?.fichiers || [];
+    const c = document.getElementById('files-list'); c.innerHTML = '';
+    fichiers.forEach(f => {
+      const a = document.createElement('a');
+      const dlUrl = convertDriveUrl(f.url);
+      a.href = dlUrl; a.target='_blank'; a.rel='noopener noreferrer'; a.className='file-card checking'; a.download='';
+      a.innerHTML = `
+        <div class="file-icon" id="icon-${encodeURIComponent(f.name)}">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="file-info">
+          <div class="file-name">${f.name}</div>
+          <div class="file-sub" id="sub-${encodeURIComponent(f.name)}">Vérification...</div>
+        </div>
+        <span class="file-arrow">›</span>`;
+      c.appendChild(a);
+      checkDriveLink(dlUrl).then(ok => {
+        a.classList.remove('checking');
+        const icon = document.getElementById('icon-' + encodeURIComponent(f.name));
+        const sub  = document.getElementById('sub-'  + encodeURIComponent(f.name));
+        if (ok) {
+          a.classList.add('ok');
+          if (icon) icon.className = 'file-icon ok-icon';
+          if (sub)  sub.textContent = '✅ Disponible — cliquez pour télécharger';
+        } else {
+          a.classList.add('broken');
+          if (icon) icon.className = 'file-icon broken-icon';
+          if (sub)  sub.textContent = '❌ Lien non disponible — contacte ton formateur';
+        }
+      });
+    });
+  }
+
+  async function checkDriveLink(url) {
+    if (!url || url.trim() === '') return false;
+    try { await fetch(url, { method:'HEAD', mode:'no-cors' }); return true; } catch(e) { return false; }
+  }
+
+  function startTimer() {
+    const cfg = currentConfig; if (!cfg) return;
+    const END = new Date(cfg.sessionStart).getTime() + Number(cfg.dureeHeures) * 3600000;
+    function upd() {
+      const rem=END-Date.now(), dot=document.getElementById('timer-dot'),
+            disp=document.getElementById('timer-display'), banner=document.getElementById('expired-banner');
+      if (rem<=0) {
+        dot.classList.add('expired'); disp.classList.add('expired'); disp.textContent='Expiré';
+        banner.style.display='block';
+        document.querySelectorAll('.file-card').forEach(c=>{c.style.pointerEvents='none';c.style.opacity='0.4';});
+        return;
+      }
+      const h=Math.floor(rem/3600000),m=Math.floor((rem%3600000)/60000),s=Math.floor((rem%60000)/1000);
+      disp.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      setTimeout(upd,1000);
+    }
+    upd();
+  }
+
+  let fichiersList = [];
+
+  function renderFichiers(fichiers) {
+    fichiersList = fichiers.map(f => ({ name: f.name || '', url: f.url || '' }));
+    if (fichiersList.length === 0) fichiersList = [{ name: '', url: '' }];
+    afficherFichiers();
+  }
+
+  function afficherFichiers() {
+    const c = document.getElementById('admin-fichiers');
+    c.innerHTML = '';
+    fichiersList.forEach((f, i) => {
+      c.innerHTML += `
+        <div class="fichier-block" id="fblock-${i}">
+          <div class="fichier-header">
+            <span>Fichier ${i + 1}</span>
+            <button class="btn-supprimer" onclick="removeFichier(${i})">Supprimer</button>
+          </div>
+          <div class="admin-field">
+            <label>Nom</label>
+            <input type="text" id="fname-${i}" value="${f.name}" placeholder="Ex: Support de formation" oninput="fichiersList[${i}].name=this.value"/>
+          </div>
+          <div class="admin-field">
+            <label>Lien Drive</label>
+            <input type="text" id="furl-${i}" value="${f.url}" placeholder="https://drive.google.com/file/d/..." oninput="fichiersList[${i}].url=this.value"/>
+          </div>
+        </div>`;
+    });
+    c.innerHTML += `<button class="btn-ajouter" onclick="addFichier()">+ Ajouter un fichier</button>`;
+  }
+
+  function addFichier() { fichiersList.push({ name: '', url: '' }); afficherFichiers(); }
+  function removeFichier(i) {
+    if (fichiersList.length <= 1) { alert('Il faut au moins un fichier.'); return; }
+    fichiersList.splice(i, 1); afficherFichiers();
+  }
+
+  async function loadAdminForm() {
+    document.getElementById('admin-url').value = SCRIPT_URL || '';
+    const cfg = currentConfig || { code:'', sessionStart:'', dureeHeures:8, adminPassword:'ADMIN2026',
+      fichiers:[{name:'Support de formation',url:''},{name:'Photo de groupe',url:''}] };
+    document.getElementById('admin-code').value      = cfg.code || '';
+    document.getElementById('admin-duree').value     = cfg.dureeHeures || 8;
+    document.getElementById('admin-session').value   = (cfg.sessionStart||'').slice(0,16);
+    document.getElementById('admin-pw-change').value = cfg.adminPassword || 'ADMIN2026';
+    document.getElementById('code-show').textContent = cfg.code || '—';
+    renderFichiers(cfg.fichiers || []);
+    try {
+      const res  = await fetch(SCRIPT_URL + "?action=getListe&t=" + Date.now());
+      const data = await res.json();
+      if (data.success && data.matricules && data.matricules.length > 0) {
+        document.getElementById('admin-liste').value = data.matricules.join('\n');
+        const badge = document.getElementById('liste-count');
+        badge.textContent = data.matricules.length + ' nass';
+        badge.style.display = 'inline-block';
+      }
+    } catch(e) {}
+  }
+
+  function confirmSaveAdmin() {
+    const newCode     = document.getElementById('admin-code').value.trim().toUpperCase();
+    const currentCode = (currentConfig?.code?.toString() || '').toUpperCase();
+    if (newCode !== currentCode && currentCode !== '') {
+      document.getElementById('modal-old-code').textContent = currentCode;
+      document.getElementById('modal-new-code').textContent = newCode;
+      document.getElementById('confirm-modal').classList.add('active');
+    } else { saveAdmin(); }
+  }
+
+  function closeModal() { document.getElementById('confirm-modal').classList.remove('active'); }
+  function confirmAndSave() { closeModal(); saveAdmin(); }
+
+  async function saveListe() {
+    const matricules = document.getElementById('admin-liste').value.split('\n').map(m=>m.trim()).filter(m=>m!=='');
+    const btn=document.getElementById('save-liste-btn'), ok=document.getElementById('liste-success'), err=document.getElementById('liste-error');
+    btn.disabled=true; btn.textContent="Enregistrement...";
+    try {
+      await fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ action:"saveListe", matricules }) });
+      ok.textContent=`✅ ${matricules.length} matricule(s) sauvegardé(s) !`; ok.style.display='block'; err.style.display='none';
+      const badge=document.getElementById('liste-count'); badge.textContent=`${matricules.length} nass`; badge.style.display='inline-block';
+      setTimeout(()=>ok.style.display='none', 3000);
+    } catch(e) { err.style.display='block'; }
+    btn.disabled=false; btn.textContent="👥 Enregistrer la liste";
+  }
+
+  async function saveAdmin() {
+    const code    = document.getElementById('admin-code').value.trim().toUpperCase();
+    const session = document.getElementById('admin-session').value;
+    const duree   = parseInt(document.getElementById('admin-duree').value);
+    const adminPw = document.getElementById('admin-pw-change').value.trim() || 'ADMIN2026';
+    const errEl=document.getElementById('admin-error'), okEl=document.getElementById('admin-success');
+    const btn=document.getElementById('save-btn');
+    if (!code||!session||!duree) { errEl.style.display='block'; okEl.style.display='none'; return; }
+    const fichiers = fichiersList.map(f => ({
+      name: f.name.trim() || 'Fichier',
+      sous_titre: 'Cliquez pour télécharger',
+      url: f.url.trim()
+    }));
+    btn.disabled=true; btn.textContent="⏳ Envoi en cours...";
+    errEl.style.display='none'; okEl.style.display='none';
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action:"saveConfig", code, sessionStart:session+":00", dureeHeures:duree, fichiers, adminPassword:adminPw })
+      });
+      currentConfig = { code, sessionStart:session+":00", dureeHeures:duree, fichiers, adminPassword:adminPw };
+      document.getElementById('code-show').textContent = code;
+      okEl.textContent = "✅ Config sauvegardée ! Code actif : " + code;
+      okEl.style.display = 'block';
+      setTimeout(() => okEl.style.display='none', 5000);
+    } catch(e) {
+      errEl.textContent = "❌ Erreur : " + e.message;
+      errEl.style.display = 'block';
+    }
+    btn.disabled=false; btn.textContent="💾 Enregistrer config";
+  }
+
+  init();
+</script>
+</body>
+</html>wport" content="width=device-width, initial-scale=1.0">
 <title>Portail Formation</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
