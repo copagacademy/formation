@@ -94,6 +94,8 @@
   .btn-cancel { background:#f1f5f9; color:#64748b; }
   .btn-confirm { background:#1e40af; color:#fff; }
   .pw-recovery { margin-top:1.5rem; padding:12px; background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:10px; font-size:12px; color:#64748b; line-height:1.7; }
+  .logo-img-wrap { display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+  .logo-img-wrap img { width:90px; height:auto; object-fit:contain; }
 </style>
 </head>
 <body>
@@ -148,9 +150,11 @@
   </div>
 
   <!-- LOGIN -->
-  <div class="logo-icon" style="background:transparent; box-shadow:none;">
-  <img src="./logo.png" style="width:56px; height:56px; object-fit:contain;"/>
-</div>
+  <div id="login-page">
+    <div class="logo">
+      <div class="logo-img-wrap">
+        <img src="logo.png" alt="Logo" onerror="this.parentElement.innerHTML='<div class=\'logo-icon\' style=\'background:#1e40af;\'><svg fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'white\' stroke-width=\'2\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253\'/></svg></div>'"/>
+      </div>
       <h1>Portail Formation</h1>
       <p>Entrez vos informations pour accéder</p>
     </div>
@@ -169,9 +173,10 @@
 
   <!-- ACCESS -->
   <div id="access-page">
-   <div class="logo-icon" style="background:transparent; box-shadow:none;">
-  <img src="./logo.png" style="width:56px; height:56px; object-fit:contain;"/>
-</div>
+    <div class="logo">
+      <div class="logo-img-wrap">
+        <img src="logo.png" alt="Logo" onerror="this.parentElement.innerHTML='<div class=\'logo-icon\' style=\'background:#1e40af;\'><svg fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'white\' stroke-width=\'2\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg></div>'"/>
+      </div>
       <h1>Supports de Formation</h1>
       <p>Accès accordé — bonne formation !</p>
     </div>
@@ -301,7 +306,7 @@
   function checkAdminPassword() {
     const input = document.getElementById('admin-pw-input').value.trim();
     const err   = document.getElementById('admin-pw-error');
-    const expected = (currentConfig?.adminPassword || "ADMIN2026").toUpperCase();
+    const expected = String(currentConfig?.adminPassword || "ADMIN2026").toUpperCase();
     if (input.toUpperCase() === expected) {
       hide("admin-pw-page");
       show("admin-page");
@@ -508,7 +513,7 @@
     document.getElementById('admin-code').value      = cfg.code || '';
     document.getElementById('admin-duree').value     = cfg.dureeHeures || 8;
     document.getElementById('admin-session').value   = (cfg.sessionStart||'').slice(0,16);
-    document.getElementById('admin-pw-change').value = cfg.adminPassword || 'ADMIN2026';
+    document.getElementById('admin-pw-change').value = String(cfg.adminPassword || 'ADMIN2026');
     document.getElementById('code-show').textContent = cfg.code || '—';
     renderFichiers(cfg.fichiers || []);
     try {
