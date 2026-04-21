@@ -164,6 +164,10 @@
         <label>Téléphone</label>
         <input type="tel" id="insc-tel" placeholder="Ex: 0612345678"/>
       </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="insc-email" placeholder="Ex: nom@copag.ma"/>
+      </div>
       <div class="divider"></div>
       <div class="field">
         <label>Unité</label>
@@ -314,7 +318,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrIgBfMKke4-MH7f3vmB0Y6qvwlk1RUNlI5jppOC7hfI4p6Sg9CXNrg6RUqF857Qq4/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHDBkS27kJ-0dXTfhk1HUR-ElmOZAOIuRPJxFCEuawxLX9m65RFRqxTfBiZhdwMN8w/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -368,6 +372,7 @@
     const unite        = document.getElementById('insc-unite').value;
     const poste        = document.getElementById('insc-poste').value;
     const responsable  = document.getElementById('insc-responsable').value;
+    const email        = document.getElementById('insc-email').value.trim();
     const err          = document.getElementById('insc-error');
     const btn          = document.getElementById('insc-btn');
 
@@ -382,7 +387,7 @@
     btn.disabled=true; btn.textContent='Envoi en cours...';
     try {
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'saveInscription', matricule, nom, cin, telephone:tel, unite, poste, responsable }) });
+        body: JSON.stringify({ action:'saveInscription', matricule, nom, cin, telephone:tel, email, unite, poste, responsable }) });
       showPage('success-page');
     } catch(e) {
       err.textContent='Erreur de connexion — réessayez.'; err.style.display='block';
