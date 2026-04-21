@@ -318,7 +318,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWFpawb5MwMw3Da1I7Jqh7QxFlYwe_y0EmLc8dZ3wEj1rk_Yz6qM6EUBBvIxgEsunc/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNRIQB5efTKGJ9wwtv96iLDKl2OBLuTGB_JP60ntGi9BGX1JFj1BDjw-ezmsDOdonj/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -531,6 +531,34 @@
     } catch(e) {}
   }
 
+  function normalizeStatut(val) {
+    if (!val) return 'attente';
+    const s = val.toString().trim().toLowerCase();
+    if (s === 'accepte' || s === 'accepté') return 'accepte';
+    if (s === 'refuse' || s === 'refusé') return 'refuse';
+    return 'attente';
+  }
+
+  function formatDate(val) {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    try {
+      const d = new Date(val);
+      if (isNaN(d)) return '';
+      return d.toLocaleDateString('fr-FR');
+    } catch(e) { return ''; }
+  }
+
+  function formatHeure(val) {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    try {
+      const d = new Date(val);
+      if (isNaN(d)) return '';
+      return d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    } catch(e) { return ''; }
+  }
+
   function filterInscriptions(filter) {
     currentFilter = filter;
     ['all','attente','accepte','refuse'].forEach(f => {
@@ -542,8 +570,8 @@
 
   function renderInscriptions(filter) {
     const c = document.getElementById('admin-inscriptions');
-    let list = allInscriptions;
-    if (filter !== 'all') list = list.filter(i => (i.statut||'attente') === filter);
+    let list = allInscriptions.map(i => ({...i, statut: normalizeStatut(i.statut)}));
+    if (filter !== 'all') list = list.filter(i => i.statut === filter);
     if (list.length === 0) { c.innerHTML = '<p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Aucune demande.</p>'; return; }
     c.innerHTML = list.map(i => `
       <div class="insc-card" id="card-${i.ligne}">
@@ -553,11 +581,11 @@
         </div>
         <div class="insc-info">
           <strong>${i.matricule}</strong> — ${i.cin || '—'} — ${i.telephone || '—'}<br>
-          ${i.unite || '—'} / ${i.poste || '—'}<br>
+          ${i.email ? i.email + '<br>' : ''}${i.unite || '—'} / ${i.poste || '—'}<br>
           Responsable : ${i.responsable || '—'}<br>
-          <span style="color:#94a3b8;">${i.date || ''} ${i.heure || ''}</span>
+          <span style="color:#94a3b8;">${formatDate(i.date)} ${formatHeure(i.heure)}</span>
         </div>
-        ${(i.statut||'attente') === 'attente' ? `
+        ${i.statut === 'attente' ? `
         <div class="insc-actions">
           <button class="btn-accept" onclick="updateStatut(${i.ligne}, 'accepte')">Accepter</button>
           <button class="btn-refuse" onclick="updateStatut(${i.ligne}, 'refuse')">Refuser</button>
