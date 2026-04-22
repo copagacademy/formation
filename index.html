@@ -284,6 +284,11 @@
         <button class="filter-btn" id="filter-refuse" onclick="filterInscriptions('refuse')">Refusés</button>
         <button class="filter-btn" id="filter-refresh" onclick="refreshInscriptions()" title="Actualiser">&#x21bb;</button>
       </div>
+      <div id="accepter-tous-wrap" style="margin-bottom:10px;display:none;">
+        <button class="btn green" onclick="accepterTous()" id="btn-accepter-tous" style="margin-bottom:0;">
+          Accepter tous les en attente
+        </button>
+      </div>
       <div id="admin-inscriptions"><p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Chargement...</p></div>
 
       <p class="admin-section-title">🔗 URL Apps Script</p>
@@ -325,7 +330,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPaddCKsrwQzfvbh29B_se-YbCMFwhPekMfFJcLQgiEdnUBPbKFG5WD5n33r6ip1sw/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuss4OklkGZAicM6ztBaUyTYhtJ_F7G09mCe1kQrHHvIrgeBt0rvPYVKitcxDzREn4/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -526,6 +531,20 @@
     await loadInscriptions();
   }
 
+  async function accepterTous() {
+    const btn = document.getElementById('btn-accepter-tous');
+    btn.disabled = true; btn.textContent = 'Envoi en cours...';
+    try {
+      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'accepterTous' }) });
+      allInscriptions.forEach(i => { if ((i.statut||'attente') === 'attente') i.statut = 'accepte'; });
+      renderInscriptions(currentFilter);
+      const badge = document.getElementById('insc-count');
+      badge.style.display = 'none';
+    } catch(e) {}
+    btn.disabled = false; btn.textContent = 'Accepter tous les en attente';
+  }
+
   async function refreshInscriptions() {
     const btn = document.getElementById('filter-refresh');
     btn.textContent = '...'; btn.disabled = true;
@@ -542,6 +561,8 @@
         const badge = document.getElementById('insc-count');
         const attente = allInscriptions.filter(i => (i.statut||'attente') === 'attente').length;
         if (attente > 0) { badge.textContent = attente + ' en attente'; badge.style.display='inline-block'; }
+        const wrap = document.getElementById('accepter-tous-wrap');
+        if (wrap) wrap.style.display = attente > 0 ? 'block' : 'none';
         renderInscriptions(currentFilter);
       }
     } catch(e) {}
