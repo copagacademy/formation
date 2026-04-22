@@ -152,9 +152,15 @@
         <label>Matricule</label>
         <input type="text" id="insc-matricule" placeholder="Ex: 500701"/>
       </div>
-      <div class="field">
-        <label>Nom et Prénom</label>
-        <input type="text" id="insc-nom" placeholder="Ex: Mohamed Alami"/>
+      <div style="display:flex; gap:10px;">
+        <div class="field" style="flex:1;">
+          <label>Nom</label>
+          <input type="text" id="insc-nom" placeholder="Ex: ALAMI"/>
+        </div>
+        <div class="field" style="flex:1;">
+          <label>Prénom</label>
+          <input type="text" id="insc-prenom" placeholder="Ex: Mohamed"/>
+        </div>
       </div>
       <div class="field">
         <label>CIN</label>
@@ -319,7 +325,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0BgdXYS0OnZC5U24jnXzKifXm9h-K1d9GYW-LNYHIyReu4TMOJsx-RIsk64TBEQKA/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf1WiBqidrZDu1cPvD6j0b8QAO3aaf_GmRuQhaj1Yf0Mb2j-Hym5fAYXZYYReN3fpl/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -368,6 +374,8 @@
   async function submitInscription() {
     const matricule    = document.getElementById('insc-matricule').value.trim().toUpperCase();
     const nom          = document.getElementById('insc-nom').value.trim();
+    const prenom       = document.getElementById('insc-prenom').value.trim();
+    const nomComplet   = nom + ' ' + prenom;
     const cin          = document.getElementById('insc-cin').value.trim().toUpperCase();
     const tel          = document.getElementById('insc-tel').value.trim().replace(/\s/g,'');
     const unite        = document.getElementById('insc-unite').value;
@@ -378,7 +386,7 @@
     const btn          = document.getElementById('insc-btn');
 
     err.style.display = 'none';
-    if (!matricule||!nom||!cin||!tel||!unite||!poste||!responsable) {
+    if (!matricule||!nom||!prenom||!cin||!tel||!unite||!poste||!responsable) {
       err.textContent = 'Veuillez remplir tous les champs.'; err.style.display='block'; return;
     }
     if (!/^\d{10}$/.test(tel)) {
@@ -388,7 +396,7 @@
     btn.disabled=true; btn.textContent='Envoi en cours...';
     try {
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'saveInscription', matricule, nom, cin, telephone:tel, email, unite, poste, responsable }) });
+        body: JSON.stringify({ action:'saveInscription', matricule, nom:nomComplet, cin, telephone:tel, email, unite, poste, responsable }) });
       showPage('success-page');
     } catch(e) {
       err.textContent='Erreur de connexion — réessayez.'; err.style.display='block';
