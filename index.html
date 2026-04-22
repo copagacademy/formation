@@ -325,7 +325,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrClh74y1rH4tO6FT0D1G_bqd592c_MPUaIqROB6S27dbaqzTquGVx8CH20au_a2KS/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPaddCKsrwQzfvbh29B_se-YbCMFwhPekMfFJcLQgiEdnUBPbKFG5WD5n33r6ip1sw/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -396,7 +396,7 @@
     btn.disabled=true; btn.textContent='Envoi en cours...';
     try {
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'saveInscription', matricule, nom:nomComplet, cin, telephone:tel, email, unite, poste, responsable }) });
+        body: JSON.stringify({ action:'saveInscription', matricule, nom, prenom, cin, telephone:tel, email, unite, poste, responsable }) });
       showPage('success-page');
     } catch(e) {
       err.textContent='Erreur de connexion — réessayez.'; err.style.display='block';
