@@ -284,6 +284,11 @@
         <button class="filter-btn" id="filter-refuse" onclick="filterInscriptions('refuse')">Refusés</button>
         <button class="filter-btn" id="filter-refresh" onclick="refreshInscriptions()" title="Actualiser">&#x21bb;</button>
       </div>
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <label style="font-size:12px;color:#64748b;white-space:nowrap;">Filtrer par date :</label>
+        <input type="date" id="filter-date" onchange="filterInscriptions(currentFilter)" style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;"/>
+        <button onclick="document.getElementById('filter-date').value='';filterInscriptions(currentFilter);" style="font-size:12px;color:#94a3b8;background:none;border:none;cursor:pointer;">✕</button>
+      </div>
       <div id="accepter-tous-wrap" style="margin-bottom:10px;display:none;">
         <button class="btn green" onclick="accepterTous()" id="btn-accepter-tous" style="margin-bottom:0;">
           Accepter tous les en attente
@@ -330,7 +335,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuss4OklkGZAicM6ztBaUyTYhtJ_F7G09mCe1kQrHHvIrgeBt0rvPYVKitcxDzREn4/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHDBkS27kJ-0dXTfhk1HUR-ElmOZAOIuRPJxFCEuawxLX9m65RFRqxTfBiZhdwMN8w/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -403,6 +408,12 @@
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ action:'saveInscription', matricule, nom, prenom, cin, telephone:tel, email, unite, poste, responsable }) });
       showPage('success-page');
+      ['insc-matricule','insc-nom','insc-prenom','insc-cin','insc-tel','insc-email'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.value='';
+      });
+      ['insc-unite','insc-poste','insc-responsable'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.selectedIndex=0;
+      });
     } catch(e) {
       err.textContent='Erreur de connexion — réessayez.'; err.style.display='block';
     }
@@ -609,6 +620,12 @@
     const c = document.getElementById('admin-inscriptions');
     let list = allInscriptions.map(i => ({...i, statut: normalizeStatut(i.statut)}));
     if (filter !== 'all') list = list.filter(i => i.statut === filter);
+    const dateFilter = document.getElementById('filter-date')?.value;
+    if (dateFilter) {
+      const [y,m,d] = dateFilter.split('-');
+      const dateFormatted = d + '/' + m + '/' + y;
+      list = list.filter(i => i.date === dateFormatted);
+    }
     if (list.length === 0) { c.innerHTML = '<p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Aucune demande.</p>'; return; }
     c.innerHTML = list.map(i => `
       <div class="insc-card" id="card-${i.ligne}">
